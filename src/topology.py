@@ -9,6 +9,90 @@ import os
 from demands import Demand
 import random
 import time
+import copy
+
+def generate_n_node_n_demands_two_paths(n: int, demand_size = 1): 
+    multigraph = nx.MultiGraph()
+    # Adding nodes and edges
+    for i in range(0, n + 5):
+        multigraph.add_node(i)
+    multigraph.add_edges_from([(0, 1), (0, 2), (1, 3), (2, 3)])
+    for i in range(4, n + 5):
+        multigraph.add_edges_from([(i, 0)])
+
+
+    demand_graph = {}
+
+    for i in range(4, n+5):
+        d = Demand(i, 3, demand_size)
+        demand_graph[i] = d
+    return multigraph, demand_graph
+
+
+
+def generate_n_node_1_demands(n: int, demand_size= 1 ): 
+    multigraph = nx.MultiGraph()
+    for i in range(0, n):
+        multigraph.add_node(i)
+
+    multigraph.add_node(1)
+    multigraph.add_edge(0, 1)
+
+    demand_graph = {}
+
+    for i in range(0, n):
+        d = Demand(0, 1, demand_size)
+        demand_graph[i] = d
+    return multigraph, demand_graph
+
+
+
+def generate_two_node_n_demands(n: int, demand_size = 1): 
+    multigraph = nx.MultiGraph()
+    multigraph.add_node(0)
+    multigraph.add_node(1)
+    multigraph.add_edge(0, 1)
+
+    demand_graph = {}
+
+    for i in range(0, n):
+        d = Demand(0, 1, demand_size)
+        demand_graph[i] = d
+    return multigraph, demand_graph
+
+def generate_n_node_graph_and_demands(n: int, demand_size = 1, filename_prefix = "g"): 
+    multigraph = nx.MultiGraph()
+    
+    # Add nodes
+    multigraph.add_nodes_from(range(1, n+2))  # Node numbers start from 1
+    
+    # Add edges from all nodes to node 1
+    for node in range(2, n+2):
+        multigraph.add_edge(node, 1)
+
+    demand_graph1 = {}
+
+    for i in range(2, n+2):
+        d = Demand(i, 1, 2)
+        demand_graph1[i-2] = d
+
+
+    demand_graph2 = {}
+
+    for i in range(2, n+2):
+        d = Demand(i, 0, demand_size)
+        demand_graph2[i-2] = d
+
+    # Create a deep copy of multigraph
+    limited_graph = copy.deepcopy(multigraph)
+    
+    # Add node 0 and edge from node 1 to node 0 in the copied graph
+    limited_graph.add_node(0)
+    limited_graph.add_edge(1, 0)
+
+
+
+    return multigraph, demand_graph1, limited_graph, demand_graph2
 from scipy.sparse.linalg import eigsh
 
 TOPZOO_PATH = "./topologies/topzoo"
@@ -63,6 +147,15 @@ def get_gravity_demands2_very_random(graph: nx.MultiDiGraph, amount: int, seed=1
         s,t = get_random_s_and_t(graph.nodes(), connected)
         demand_size = random.randrange(1, highestuniformthing+1) * random.randrange(1, highestuniformthing+1)
         demands[len(demands)+offset] = Demand(str(s), str(t), demand_size)
+
+    return demands
+
+
+def get_demands_size_x(graph: nx.MultiDiGraph, amount:int, seed=10, offset=0, size=1):
+    demands = get_gravity_demands(graph, amount, seed, offset)
+
+    for demand in demands.keys():
+        demands[demand].size = size
 
     return demands
 
@@ -786,6 +879,12 @@ def cut_graph(topo, demands: list[Demand]):
     
     
 if __name__ == "__main__":
+    generate_graph(10,"10")
+    generate_graph(50,"50")
+    generate_graph(100,"100")
+    exit()
+    G = nx.MultiDiGraph(nx.nx_pydot.read_dot("../dot_examples/split5NodeExample.dot"))
+    G = get_nx_graph(TOPZOO_PATH +  "/Ai3.gml")
     G = get_nx_graph("topologies/japanese_topologies/kanto11.gml")
 
     demands = get_gravity_demands2_nodes_have_constant_size(G, 10, 0, 0, 7)

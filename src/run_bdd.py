@@ -1,8 +1,9 @@
 import argparse
 import time
 from RSABuilder import AllRightBuilder
-from topology import get_gravity_demands, get_nx_graph, get_gravity_demands2_nodes_have_constant_size
+from topology import get_gravity_demands, get_nx_graph, get_gravity_demands2_nodes_have_constant_size, generate_n_node_graph_and_demands
 from demand_ordering import demand_order_sizes
+from topology import generate_two_node_n_demands, generate_n_node_n_demands_two_paths
 
 rw = None
 rsa = None
@@ -22,13 +23,27 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     wavelengths = args.wavelengths
-    num_paths = args.wavelengths
-    G = get_nx_graph(args.filename)
-    if G.nodes.get("\\n") is not None:
-        G.remove_node("\\n")
+    G = 1
+    graph, demands, graph_overlap, demand_overlap = 0,0,0,0
+    if "naiv2" in args.experiment:
+        graph, demands = generate_two_node_n_demands(args.demands, 2)
+    elif "naiv3" in args.experiment:
+        graph, demands = generate_two_node_n_demands(args.demands, 2)
+    elif "diamond" in args.experiment:
+        graph, demands = generate_n_node_n_demands_two_paths(args.demands, 2)
+    elif "synth" in args.experiment:
+        graph, demands, graph_overlap, demand_overlap = generate_n_node_graph_and_demands(args.demands)
+    
+    elif "synth" not in args.experiment:
 
-    demands = get_gravity_demands2_nodes_have_constant_size(G, args.demands)
-    demands = demand_order_sizes(demands)
+        G = get_nx_graph(args.filename)
+        if G.nodes.get("\\n") is not None:
+            G.remove_node("\\n")
+        demands = get_gravity_demands2_nodes_have_constant_size(G, args.demands, seed=args.wavelengths)
+        demands = demand_order_sizes(demands)
+
+    num_paths = args.wavelengths
+
     
     solved = False
     size = 0
@@ -72,6 +87,7 @@ if __name__ == "__main__":
     elif(args.experiment == "path_config_lim_50"):
         bob = AllRightBuilder(G, demands, wavelengths).limited().path_configurations(50).path_type(AllRightBuilder.PathType.DISJOINT).construct()
         (solved, size, solve_time) = (bob.solved(), bob.size(), bob.get_build_time())  
+
     elif(args.experiment == "conf_lim_cliq_1"):
         bob = AllRightBuilder(G, demands, wavelengths).limited().path_configurations(1).increasing(False).path_type(AllRightBuilder.PathType.DISJOINT).construct()
         (solved, size, solve_time) = (bob.solved(), bob.size(), bob.get_build_time())  
@@ -81,6 +97,40 @@ if __name__ == "__main__":
     elif(args.experiment == "conf_lim_cliq_50"):
         bob = AllRightBuilder(G, demands, wavelengths).limited().path_configurations(50).increasing(True).clique().path_type(AllRightBuilder.PathType.DISJOINT).construct()
         (solved, size, solve_time) = (bob.solved(), bob.size(), bob.get_build_time())
+
+
+
+    elif(args.experiment == "synth1"):
+        bob1 = AllRightBuilder(graph, demands, wavelengths).modulation({0:1}).limited().path_type(AllRightBuilder.PathType.DISJOINT).construct()
+        (solved, size, solve_time) = (bob1.solved(), bob1.size(), bob1.get_build_time())  
+    elif(args.experiment == "synth2"): 
+        bob2 = AllRightBuilder(graph_overlap, demand_overlap, wavelengths).modulation({0:1}).limited().path_type(AllRightBuilder.PathType.DISJOINT).construct()
+        (solved, size, solve_time) = (bob2.solved(), bob2.size(), bob2.get_build_time())  
+    elif(args.experiment == "naiv2"):
+        bob1 = AllRightBuilder(graph, demands, wavelengths).modulation({0:1}).limited().path_type(AllRightBuilder.PathType.DISJOINT).construct()
+        (solved, size, solve_time) = (bob1.solved(), bob1.size(), bob1.get_build_time())  
+    elif(args.experiment == "naiv3"):
+        bob1 = AllRightBuilder(graph, demands, wavelengths).modulation({0:1}).path_type(AllRightBuilder.PathType.DISJOINT).construct()
+        (solved, size, solve_time) = (bob1.solved(), bob1.size(), bob1.get_build_time())  
+    elif(args.experiment == "diamond"):
+        bob1 = AllRightBuilder(graph, demands, wavelengths).modulation({0:1}).limited().path_type().construct()
+        (solved, size, solve_time) = (bob1.solved(), bob1.size(), bob1.get_build_time())  
+    elif(args.experiment == "diamond2"):
+        bob1 = AllRightBuilder(graph, demands, wavelengths).modulation({0:1}).limited().path_type().construct()
+        (solved, size, solve_time) = (bob1.solved(), bob1.size(), bob1.get_build_time())  
+        
+    elif(args.experiment == "diamond_conf_1"):
+        bob = AllRightBuilder(graph, demands, wavelengths).modulation({0:1}).limited().path_configurations(1).path_type(AllRightBuilder.PathType.DISJOINT).construct()
+        (solved, size, solve_time) = (bob.solved(), bob.size(), bob.get_build_time())  
+
+    elif(args.experiment == "diamond_conf_10"):
+        bob = AllRightBuilder(graph, demands, wavelengths).modulation({0:1}).limited().path_configurations(10).path_type(AllRightBuilder.PathType.DISJOINT).construct()
+        (solved, size, solve_time) = (bob.solved(), bob.size(), bob.get_build_time())  
+
+    elif(args.experiment == "diamond_conf_50"):
+        bob = AllRightBuilder(graph, demands, wavelengths).modulation({0:1}).limited().path_configurations(50).path_type(AllRightBuilder.PathType.DISJOINT).construct()
+        (solved, size, solve_time) = (bob.solved(), bob.size(), bob.get_build_time())  
+
     
     elif (args.experiment == "clique_and_limited"):
         bob = AllRightBuilder(G, demands, num_paths).limited().clique().construct()
@@ -89,6 +139,12 @@ if __name__ == "__main__":
         bob = AllRightBuilder(G, demands, num_paths).limited().clique(True).construct()
         (solved, size, solve_time) = (bob.solved(), bob.size(), bob.get_build_time())  
         
+
+    elif (args.experiment == "lim_modulation_2path_inc"):
+        bob = AllRightBuilder(G, demands, 2).limited().increasing().path_type(AllRightBuilder.PathType.DISJOINT).construct()
+        (solved, size, solve_time) = (bob.solved(), bob.size(), bob.get_build_time())  
+        
+
     # if args.experiment == "baseline":
     #     bob = AllRightBuilder(G, demands, wavelengths).construct()
     #     (solved, size, solve_time) = (bob.solved(), bob.size(), bob.get_build_time())

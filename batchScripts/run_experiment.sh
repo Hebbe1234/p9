@@ -4,7 +4,36 @@ RUN=$2
 BASHFILE=${3-"./run_demands.sh"}
 
 
+
+
+
 case $EXPERIMENT in
+
+	500)
+	for SEED in {1..10}; 
+	do
+		sbatch ./make_single_graph.sh $EXPERIMENT $SEED
+	done
+
+
+esac
+case $EXPERIMENT in
+	600)
+	for SEED in {1..10}; 
+	do
+		sbatch ./make_single_graph.sh $EXPERIMENT $SEED
+	done
+
+
+esac
+
+
+case $EXPERIMENT in
+	250)
+		sbatch ./make_single_graph.sh $EXPERIMENT 3 3;;
+	350)
+		sbatch ./make_single_graph.sh $EXPERIMENT 5 5;;
+
 	0.1) #test super script
 		outdir=super_script$RUN
 		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/simple.txt ../out/$outdir run_bdd.py baseline 5 1 15 1 $BASHFILE);
@@ -38,38 +67,10 @@ case $EXPERIMENT in
 		bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/splitableNetworks/splitAble70.txt ../out/inc_parpar_limited_split_fancy_P2_v2$RUN run_bdd.py inc-par_limited_split_fancy_v2 2 2 10 5 $BASHFILE;
 		bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/splitableNetworks/splitAble70.txt ../out/inc_parpar_limited_split_fancy_P3_v2$RUN run_bdd.py inc-par_limited_split_fancy_v2 3 2 10 5 $BASHFILE;;
 
-	1.9)
-		bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/japanese.txt ../out/clique_and_limit$RUN run_bdd.py clique_and_limited 2 8 10 3 $BASHFILE;
-		bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/japanese.txt ../out/clique_limit_and_limited$RUN run_bdd.py clique_limit_and_limited 2 8 10 3 $BASHFILE;;
-
 	2)
 		bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/japanese.txt ../out/path_config_lim_1$RUN run_bdd.py path_config_lim_1 2 8 10 5 $BASHFILE;
 		bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/japanese.txt ../out/path_config_lim_10$RUN run_bdd.py path_config_lim_5 2 8 10 5 $BASHFILE;
 		bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/japanese.txt ../out/path_config_lim_50$RUN run_bdd.py path_config_lim_50 2 8 10 5 $BASHFILE;;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -100,6 +101,36 @@ case $EXPERIMENT in
 		bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/graphs_v2.txt ../out/rsa_bdd_baseline_run$RUN run_bdd.py rsa_baseline 0 3 5 5 $BASHFILE;;
 
 
+
+
+
+	5.1)
+		for SEED in {1..10}; 
+		do
+		outdir=mip_limited_n_demands_2_paths_dt$SEED$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/dt.txt ../out/$outdir run_bdd.py lim_modulation_2path_inc $SEED 11 5 1 $BASHFILE);
+		echo $output #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir $SEED
+		done
+	esac
+
+case $EXPERIMENT in
+
+	#BDD 2 fixed paths
+	5.2)
+		for SEED in {1..10}; 
+		do
+		outdir=mip_limited_n_demands_2_paths_kanto$SEED$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/kanto.txt ../out/$outdir run_bdd.py lim_modulation_2path_inc $SEED 11 5 1 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir $SEED
+		done
+	esac
+
+case $EXPERIMENT in
+
+	#MIP
+
 	6.3)
 		outdir=rsa_inc_par$RUN
 		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/graphs_v2.txt ../out/rsa_inc_par_martin run_bdd.py rsa_inc_par 0 2 10 5 $BASHFILE);
@@ -118,6 +149,97 @@ case $EXPERIMENT in
 		echo $output; #not necessary, just to see jobs we await
 		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
 		
+
+
+	8)
+		outdir=n_nodes_n_demands_no_overlap$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/single.txt ../out/$outdir run_bdd.py synth1 2 19 5 5 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+		
+	8.1)
+		outdir=n_nodes_n_demands_overlap$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/single.txt ../out/$outdir run_bdd.py synth2 2 19 5 5 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+		
+	8.2)
+		outdir=two_nodes_n_demands$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/single.txt ../out/$outdir run_bdd.py naiv2 2 29 5 10 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+	8.3)
+		outdir=two_nodes_n_demands_no_lim$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/single.txt ../out/$outdir run_bdd.py naiv3 2 19 5 5 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+	8.4)
+		outdir=two_nodes_n_demands_diamond$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/single.txt ../out/$outdir run_bdd.py diamond 2 10 2 2 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+
+	8.5)
+		outdir=two_nodes_n_demands_diamond_config_1$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/single.txt ../out/$outdir run_bdd.py diamond_conf_1 2 20 2 2 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+	8.6)
+		outdir=two_nodes_n_demands_diamond_config_10$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/single.txt ../out/$outdir run_bdd.py diamond_conf_10 2 20 2 2 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+
+	8.7)
+		outdir=two_nodes_n_demands_diamond_config_50$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/single.txt ../out/$outdir run_bdd.py diamond_conf_50 2 20 2 2 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+
+	#MIPPES
+	9)
+		outdir=mip_limited_n_demands_dt$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/dt.txt ../out/$outdir rsa_mip.py default 0 14 20 20 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+	#MIPPES
+	9.1)
+		outdir=mip_limited_n_demands_kanto$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/kanto.txt ../out/$outdir rsa_mip.py default 0 20 10 10 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+	#MIPPES
+	9.2)
+		outdir=mip_n_demands_dt$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/dt.txt ../out/$outdir rsa_mip.py default 0 20 10 10 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+	#MIPPES
+	9.3)
+		outdir=mip_n_demands_kanto$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/kanto.txt ../out/$outdir rsa_mip.py default 0 99 10 10 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+
+	9.4)
+		outdir=mip_limited_n_demands_dt_2_paths$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/dt.txt ../out/$outdir rsa_mip.py default 0 15 10 10 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+	#MIPPES
+	9.5)
+		outdir=mip_limited_n_demands_kanto_2_paths$RUN
+		output=$(bash run_all.sh ../src ../src/topologies/japanese_topologies/ ../src/topologies/kanto.txt ../out/$outdir rsa_mip.py default 0 15 10 10 $BASHFILE);
+		echo $output; #not necessary, just to see jobs we await
+		sbatch --dependency=afterany:$output ./make_single_graph.sh $EXPERIMENT $outdir;; 
+	#MIPPES
+
+
+
+
+
+
+
 	10) #run bdd, baseline
 		bash run_all.sh ../src ../src/topologies/topzoo/ ../src/topologies/graphs_v2.txt ../out/bdd_baseline_run$RUN run_bdd.py baseline 30 5 2 2 $BASHFILE;;
 	10.2) 

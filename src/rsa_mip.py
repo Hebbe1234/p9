@@ -87,7 +87,7 @@ def main():
         os.makedirs("/scratch/rhebsg19/")
 
     parser = argparse.ArgumentParser("mainrsa_mip.py")
-    parser.add_argument("--filename", default="./topologies/topzoo/Ai3.gml", type=str, help="file to run on")
+    parser.add_argument("--filename", default="./topologies/japanese_topologies/kanto11.gml", type=str, help="file to run on")
     parser.add_argument("--slots", default=320, type=int, help="number of slots")
     parser.add_argument("--demands", default=10, type=int, help="number of demands")
     parser.add_argument("--wavelengths", default=10, type=int, help="number of wavelengths")
@@ -100,14 +100,13 @@ def main():
     if G.nodes.get("\\n") is not None:
         G.remove_node("\\n")
 
-    demands = topology.get_gravity_demands(G, args.demands, seed=10, offset=0)
+    demands = topology.get_demands_size_x(G, args.demands, seed=10, offset=0)
     paths = topology.get_simple_paths(G, demands, args.paths, shortest=False)
-    demand_channels = topology.get_channels(demands, args.slots, limit=False)
+    demand_channels = topology.get_channels(demands, args.slots, limit=True)
     _, channels = topology.get_overlapping_channels(demand_channels)
     
     demands = list(demands.values())
     
-    print(demands)
     solved = False
     start_time_constraint = time.perf_counter()
     end_time_constraint = time.perf_counter()
